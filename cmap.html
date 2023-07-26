@@ -1,0 +1,132 @@
+<head>
+<link rel='stylesheet' href='https://mostlymaths.net/webfonts/monoid.css'>
+<style> 
+  body {
+    line-height: 1.1;
+    font-size: 12pt;
+    font-family: 'monoidregular';
+    font-weight:100;
+    margin: 2%;
+    caret-color:brown;
+  }
+  .left {
+    width: 48%;
+    min-height: 95%;
+    float: left;
+  }
+  .right {
+    width: 48%;
+    float: right;
+    font-size: 70%;
+    white-space: pre;
+  }
+  .hid {
+    display: none;
+  }
+</style>
+<script>
+const $ = {
+    cel: (s) => document.createElement(s),
+    ctn: (s) => document.createTextNode(s),
+    byId: (s) => document.getElementById(s),
+    qs: (s) => document.querySelector(s),
+}
+
+const hook = () => {
+  console.log(document.querySelector(".left"))
+  $.qs(".left").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      const text = $.qs(".left").innerText
+      const cmapped = convert(text)
+      const header = headerT.split("\n").join("<br/>")
+      $.qs(".right").innerHTML = header + cmapped + "<br/>}"
+    }
+  })
+}
+
+// Spec
+
+// Node definition
+// Node Blah blah node; styledefs
+
+// Arrow? Then it's an edge
+// Node1 -> Node2 Blah blah edge; styledefs
+
+// To allow positioning commands
+// foo=bar // With no spaces, has no conversion
+// { } are ignored if they are the only character aside from spaces
+
+const hasArrow = text => text.includes(" -> ")
+const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
+const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
+const getAttrsArrow = text => /\s*\w+\s+->\s+\w+\s+(.*)$/.exec(text)
+const getAttrsNode = text => /\s*\w+\s+(.*)$/.exec(text)
+
+
+const convert = (text) => {
+  result = []
+  const lines = text.split('\n')
+  const tab = "  "
+  result.push(tab + `label="\\n${lines[0]}\\n\\n";`)
+  for(let line of lines.slice(1)){
+    if(onlyBraces(line) || onlyAttrs(line)){
+      result.push(tab + line)
+      continue
+    }
+    let attrs
+    if(hasArrow(line)){
+      attrs = getAttrsArrow(line)
+    } else {
+      attrs = getAttrsNode(line)
+    }
+    console.log(attrs)
+    if(!attrs || attrs.length == 1){
+      result.push(tab + line)
+      continue
+    }
+    const [label, props] = attrs[1].split(";")
+    const edgeLabel = `[label="${label}"${props ? " " + props : ""}]`
+    const converted = `${line.replace(attrs[1], "")} ${edgeLabel}`
+    result.push(tab + converted)
+  }
+  return result.join("<br/>")
+}
+
+const headerT = `
+digraph G {
+  layout=dot
+  margin=0.5
+  bgcolor="#ffffff00"
+  rankdir=TB
+  fontname="monoidregular"
+  overlap=scale
+  node [
+    fontname = "monoidregular"
+    style="rounded,filled"
+    labelloc=c
+    margin="0.3,0.15"
+    splines=true
+    shape=rect
+    fontsize=14
+  ];
+  edge [
+    minlen=2
+    penwidth=1
+  	color="#33333333"
+  	fontname="monoidregular"
+  	fontsize=7
+  	arrowhead=none
+  ];
+  
+  fontsize=24
+  labelloc="t";
+ 
+`
+
+</script>
+</head>
+<body onload="hook()">
+  <div contenteditable class="left"></div>
+  <div contenteditable class="right"></div>
+ </pre>
+</body>
