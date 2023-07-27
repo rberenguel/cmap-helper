@@ -34,8 +34,9 @@ const $ = {
 
 const hook = () => {
   console.log(document.querySelector(".left"))
-  $.qs(".left").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
+  $.qs(".left").addEventListener("keydown", function(event) {
+    const k = event.key
+    if (k === "Enter" || k === "Backspace") {
       const text = $.qs(".left").innerText
       const cmapped = convert(text)
       const header = headerT.split("\n").join("<br/>")
@@ -98,29 +99,29 @@ digraph G {
   margin=0.5
   bgcolor="#ffffff00"
   rankdir=TB
-  fontname="monoidregular"
+  fontname="Roboto"
+  nodesep=0.5
   overlap=scale
   node [
-    fontname = "monoidregular"
+    fontname = "Roboto"
     style="rounded,filled"
     labelloc=c
     margin="0.3,0.15"
     splines=true
     shape=rect
-    fontsize=14
+    fontsize=15
   ];
   edge [
-    minlen=2
-    penwidth=1
+    minlen=3
+    penwidth=2
   	color="#33333333"
-  	fontname="monoidregular"
-  	fontsize=7
+  	fontname="Roboto"
+  	fontsize=14
   	arrowhead=none
   ];
   
   fontsize=24
   labelloc="t";
- 
 `
 
 </script>
