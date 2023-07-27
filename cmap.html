@@ -34,14 +34,14 @@ const $ = {
 
 const hook = () => {
   console.log(document.querySelector(".left"))
-  $.qs(".left").addEventListener("keydown", function(event) {
+  $.qs(".left").addEventListener("keyup", function(event) {
     const k = event.key
-    if (k === "Enter" || k === "Backspace") {
+    //if (k === "Enter" || k === "Backspace") {
       const text = $.qs(".left").innerText
       const cmapped = convert(text)
       const header = headerT.split("\n").join("<br/>")
       $.qs(".right").innerHTML = header + cmapped + "<br/>}"
-    }
+    //}
   })
 }
 
@@ -60,8 +60,8 @@ const hook = () => {
 const hasArrow = text => text.includes(" -> ")
 const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
 const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
-const getAttrsArrow = text => /\s*\w+\s+->\s+\w+\s+(.*)$/.exec(text)
-const getAttrsNode = text => /\s*\w+\s+(.*)$/.exec(text)
+const getAttrsArrow = text => /^\s*\w+\s+->\s+\w+\s+(.*)$/.exec(text)
+const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
 
 
 const convert = (text) => {
@@ -80,7 +80,7 @@ const convert = (text) => {
     } else {
       attrs = getAttrsNode(line)
     }
-    console.log(attrs)
+    //console.log(attrs)
     if(!attrs || attrs.length == 1){
       result.push(tab + line)
       continue
@@ -88,6 +88,7 @@ const convert = (text) => {
     const [label, props] = attrs[1].split(";")
     const edgeLabel = `[label="${label}"${props ? " " + props : ""}]`
     const converted = `${line.replace(attrs[1], "")} ${edgeLabel}`
+    //console.log(line, converted, attrs[1])
     result.push(tab + converted)
   }
   return result.join("<br/>")
