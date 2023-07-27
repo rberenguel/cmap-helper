@@ -7,18 +7,19 @@
     font-family: 'monoidregular';
     font-weight:100;
     margin: 2%;
-    caret-color:brown;
   }
   .left {
     width: 48%;
     min-height: 95%;
     float: left;
+    caret-color: brown;
   }
   .right {
     width: 48%;
     float: right;
     font-size: 70%;
     white-space: pre;
+    caret-color: darkgreen;
   }
   .hid {
     display: none;
@@ -33,15 +34,12 @@ const $ = {
 }
 
 const hook = () => {
-  console.log(document.querySelector(".left"))
   $.qs(".left").addEventListener("keyup", function(event) {
     const k = event.key
-    //if (k === "Enter" || k === "Backspace") {
-      const text = $.qs(".left").innerText
-      const cmapped = convert(text)
-      const header = headerT.split("\n").join("<br/>")
-      $.qs(".right").innerHTML = header + cmapped + "<br/>}"
-    //}
+    const text = $.qs(".left").innerText
+    const cmapped = convert(text)
+    const header = headerT.split("\n").join("<br/>")
+    $.qs(".right").innerHTML = header + cmapped + "<br/>}"
   })
 }
 
@@ -53,46 +51,91 @@ const hook = () => {
 // Arrow? Then it's an edge
 // Node1 -> Node2 Blah blah edge; styledefs
 
-// To allow positioning commands
+// To allow positioning commands and subgraph settings
 // foo=bar // With no spaces, has no conversion
 // { } are ignored if they are the only character aside from spaces
+// Handles compound and subgraphs, automatically creates an invisible
+// node in the cluster. 
+
+// This runs one single pass, so clusters need to be defined before the
+// compound nodes are used
 
 const hasArrow = text => text.includes(" -> ")
+const hasSubgraph = text => text.includes("subgraph cluster_") // Only supporting clusters, no other
+const hasURL = text => text.includes("URL=")
+const isComment = text => /^\s*\/\/.*/.test(text)
 const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
 const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
 const getAttrsArrow = text => /^\s*\w+\s+->\s+\w+\s+(.*)$/.exec(text)
 const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
-
+const getCluster = text => /^\s*subgraph cluster_(\w+)\s*{$/.exec(text)
 
 const convert = (text) => {
   result = []
   const lines = text.split('\n')
   const tab = "  "
-  result.push(tab + `label="\\n${lines[0]}\\n\\n";`)
+  let clusters = []
+  result.push(tab + `label="\\n${lines[0].replace('# ', '')}\\n\\n";`)
   for(let line of lines.slice(1)){
-    if(onlyBraces(line) || onlyAttrs(line)){
+    if(onlyBraces(line) || onlyAttrs(line) || isComment(line)){
       result.push(tab + line)
       continue
     }
-    let attrs
+    if(hasSubgraph(line)){
+      const cluster = getCluster(line)[1]
+      clusters.push(cluster)
+      result.push(tab + line)
+      // Add invisible cluster name node and label
+      result.push(tab + `label="${cluster}"`)
+      result.push(tab + `${cluster} [style=invis]`)
+      continue
+    }
+    let attrs, src, dst
     if(hasArrow(line)){
-      attrs = getAttrsArrow(line)
+      attrs = getAttrsArrow(line);
+      [src, dst] = line.split("->")
+      src = src.trim()
+      dst = dst.trim()
     } else {
       attrs = getAttrsNode(line)
     }
-    //console.log(attrs)
+    let addendum = ""
+    if(src && clusters.includes(src)){
+      addendum = `ltail="cluster_${src}"`
+    }
+    if(dst && clusters.includes(dst)){
+      addendum = `lhead="cluster_${dst}"`
+    }
     if(!attrs || attrs.length == 1){
-      result.push(tab + line)
+      const compoundEdge = addendum != "" ? ` [${addendum}]` : ""
+      result.push(tab + line + compoundEdge)
       continue
     }
+    const linkUTF = hasURL(attrs[1]) ? " &#128279;" : ""
     const [label, props] = attrs[1].split(";")
-    const edgeLabel = `[label="${label}"${props ? " " + props : ""}]`
-    const converted = `${line.replace(attrs[1], "")} ${edgeLabel}`
-    //console.log(line, converted, attrs[1])
+    const labelProps = `[label="${label}${linkUTF}"${props ? " " + props : "" + addendum}]`
+    const converted = `${line.replace(attrs[1], "")} ${labelProps}`
     result.push(tab + converted)
   }
   return result.join("<br/>")
 }
+
+/*
+
+Sample
+
+# title
+
+zzz The zs; fillcolor="#33339933"
+zzz -> arstd label thingy;color=red
+subgraph cluster_foo {
+  baz baz;URL="foo"
+  artsd
+}
+// test comment -> hah foo;a
+bar -> foo
+foo -> arstd ;arrowhead=normal
+*/
 
 const headerT = `
 digraph G {
@@ -103,6 +146,7 @@ digraph G {
   fontname="Roboto"
   nodesep=0.5
   overlap=scale
+  compound=true
   node [
     fontname = "Roboto"
     style="rounded,filled"
@@ -120,7 +164,10 @@ digraph G {
   	fontsize=14
   	arrowhead=none
   ];
-  
+  graph [
+    margin=8
+    style="rounded,dotted"
+  ];
   fontsize=24
   labelloc="t";
 `
