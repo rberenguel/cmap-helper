@@ -94,7 +94,7 @@ const convert = (text) => {
     let attrs, src, dst
     if(hasArrow(line)){
       attrs = getAttrsArrow(line);
-      const match = /\s*(\w+)\s+->\s+(\w+)/.exec(line)
+      const match = /\s*(\w+)\s* -> \s*(\w+)/.exec(line)
       src = match[1]
       dst = match[2]
       src = src.trim()
