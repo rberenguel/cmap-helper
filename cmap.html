@@ -88,7 +88,7 @@ const convert = (text) => {
       result.push(tab + line)
       // Add invisible cluster name node and label
       result.push(tab + `label="${cluster}"`)
-      result.push(tab + `${cluster} [style=invis]`)
+      result.push(tab + `${cluster} [style=invis,width=0,label="",fixedsize=true]`)
       continue
     }
     let attrs, src, dst
