@@ -61,13 +61,16 @@ const hook = () => {
 // This runs one single pass, so clusters need to be defined before the
 // compound nodes are used
 
-const hasArrow = text => text.includes(" -> ")
+const hasArrow = (text) => {
+  const flag = text.includes('->')
+  return flag
+}
 const hasSubgraph = text => text.includes("subgraph cluster_") // Only supporting clusters, no other
 const hasURL = text => text.includes("URL=")
 const isComment = text => /^\s*\/\/.*/.test(text)
 const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
 const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
-const getAttrsArrow = text => /^\s*\w+\s+->\s+\w+\s+(.*)$/.exec(text)
+const getAttrsArrow = text => /^\s*\w+\s*->\s*\w+\s+(.*)$/.exec(text)
 const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
 const getCluster = text => /^\s*subgraph cluster_(\w+)\s*{$/.exec(text)
 
@@ -94,7 +97,7 @@ const convert = (text) => {
     let attrs, src, dst
     if(hasArrow(line)){
       attrs = getAttrsArrow(line);
-      const match = /\s*(\w+)\s* -> \s*(\w+)/.exec(line)
+      const match = /^\s*(\w+)\s*->\s*(\w+).*$/.exec(line)
       src = match[1]
       dst = match[2]
       src = src.trim()
