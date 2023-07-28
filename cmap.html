@@ -102,10 +102,10 @@ const convert = (text) => {
     }
     let addendum = ""
     if(src && clusters.includes(src)){
-      addendum = `ltail="cluster_${src}"`
+      addendum = ` ltail="cluster_${src}"`
     }
     if(dst && clusters.includes(dst)){
-      addendum = `lhead="cluster_${dst}"`
+      addendum = ` lhead="cluster_${dst}"`
     }
     if(!attrs || attrs.length == 1){
       const compoundEdge = addendum != "" ? ` [${addendum}]` : ""
@@ -114,7 +114,7 @@ const convert = (text) => {
     }
     const linkUTF = hasURL(attrs[1]) ? " &#128279;" : ""
     const [label, props] = attrs[1].split(";")
-    const labelProps = `[label="${label}${linkUTF}"${props ? " " + props : "" + addendum}]`
+    const labelProps = `[label="${label}${linkUTF}"${props ? " " + props : ""}${addendum}]`
     const converted = `${line.replace(attrs[1], "")} ${labelProps}`
     result.push(tab + converted)
   }
