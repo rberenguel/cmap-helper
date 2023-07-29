@@ -3,24 +3,41 @@
 <title>CMap simplifier</title>
 <style> 
   body {
-    line-height: 1.1;
     font-size: 12pt;
     font-family: 'monoidregular';
     font-weight:100;
     margin: 2%;
   }
-  .left {
+
+  div {
     width: 48%;
     min-height: 95%;
+    border-radius: 3px;
+  }
+
+  .left {
     float: left;
     caret-color: brown;
+    box-shadow: 0.0px 0.0px 2.9px 1px brown;
   }
+
+  .left:focus {
+    box-shadow: 0.0px 0.0px 2.9px 3px brown;
+    outline: none;
+  }
+
+  .right:focus {
+    box-shadow: 0.0px 0.0px 2.9px 3px darkgreen;
+    outline: none;
+  }
+
+
   .right {
-    width: 48%;
     float: right;
     font-size: 70%;
     white-space: pre;
     caret-color: darkgreen;
+    box-shadow: 0.0px 0.0px 2.9px 1px darkgreen;
   }
   .hid {
     display: none;
