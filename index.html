@@ -55,7 +55,8 @@ const hook = () => {
   $.qs(".left").addEventListener("keyup", function(event) {
     const k = event.key
     const text = $.qs(".left").innerText
-    const cmapped = convert(text)
+    const normalize = str => str.normalize('NFKD')
+    const cmapped = convert(normalize(text))
     const header = headerT.split("\n").join("<br/>")
     $.qs(".right").innerHTML = header + cmapped + "<br/>}"
     navigator.clipboard.writeText($.qs(".right").innerText)
