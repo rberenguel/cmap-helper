@@ -139,7 +139,7 @@ const convert = (text) => {
     const linkUTF = hasURL(attrs[1]) ? " &#128279;" : ""
     const [label, props] = attrs[1].split(";")
     const labelProps = `[label="${label}${linkUTF}"${props ? " " + props : ""}${addendum}]`
-    const converted = `${line.replace(attrs[1], "")} ${labelProps}`
+    const converted = `${line.replace(" " + attrs[1], " ")} ${labelProps}`
     result.push(tab + converted)
   }
   return result.join("<br/>")
