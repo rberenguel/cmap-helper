@@ -137,9 +137,17 @@ const convert = (text) => {
       continue
     }
     const linkUTF = hasURL(attrs[1]) ? " &#128279;" : ""
-    const [label, props] = attrs[1].split(";")
-    const labelProps = `[label="${label}${linkUTF}"${props ? " " + props : ""}${addendum}]`
-    const converted = `${line.replace(" " + attrs[1], " ")} ${labelProps}`
+    let [label, props] = attrs[1].split(";")
+    if(hasArrow(line) && label.trim() == "!"){
+      label = ""
+      props = props ? props : "" + "style=invis"
+    }
+    const labelPropper = (label, props) => `[label="${label}${linkUTF}"${props ? " " + props : ""}${addendum}]`
+    const operation = line.replace(" " + attrs[1], " ")
+    let converted = `${operation} ${labelPropper(label, props)}`
+    if(!hasArrow(line) && label.trim() == "="){
+      converted =  `${operation} ${labelPropper(operation.trim(), props)}`
+    }
     result.push(tab + converted)
   }
   return result.join("<br/>")
@@ -156,10 +164,12 @@ zzz -> arstd label thingy;color=red
 subgraph cluster_foo {
   baz baz;URL="foo"
   artsd
+  bah =;color=red
+  baz -> arstd !
 }
 // test comment -> hah foo;a
 bar -> foo
-foo -> arstd ;arrowhead=normal
+foo -> arstd ;arrowhead=none
 */
 
 const headerT = `
@@ -184,10 +194,10 @@ digraph G {
   edge [
     minlen=3
     penwidth=2
-  	color="#33333333"
+  	color="#33333388"
   	fontname="Roboto"
   	fontsize=14
-  	arrowhead=none
+  	arrowhead=normal // Latest papers about cmaps have recovered heads
   ];
   graph [
     margin=8
