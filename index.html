@@ -91,12 +91,14 @@ const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
 const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
 const getAttrsArrow = text => /^\s*\w+\s*->\s*\w+\s+(.*)$/.exec(text)
 const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
-const getCluster = text => /^\s*subgraph cluster_(\w+)\s*{$/.exec(text)
+const getCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
+const isRGBAHex = text => /^#[0-9a-f]{8}$/.test(text.trim())
 
 const convert = (text) => {
   result = []
   const lines = text.split('\n')
   const tab = "  "
+  const ttab = tab + tab
   let clusters = []
   result.push(tab + `label="\\n${lines[0].replace('# ', '')}\\n\\n";`)
   for(let line of lines.slice(1)){
@@ -107,10 +109,22 @@ const convert = (text) => {
     if(hasSubgraph(line)){
       const cluster = getCluster(line)[1]
       clusters.push(cluster)
+      // Add standard formatting
+      let fill
+      for(let word of line.split(" ")){
+        if(isRGBAHex(word)){
+         fill = ttab + `fillcolor="${word.trim()}"`
+         line = line.replace(word.trim(), "")
+        }
+      }
       result.push(tab + line)
-      // Add invisible cluster name node and label
-      result.push(tab + `label="${cluster}"`)
-      result.push(tab + `${cluster} [style=invis,width=0,label="",fixedsize=true]`)
+      result.push(ttab + `style="filled, rounded, dotted"`)
+      if(fill !== undefined){
+        result.push(fill)
+      }
+       // Add invisible cluster name node and label
+      result.push(ttab + `label="${cluster}"`)
+      result.push(ttab + `${cluster} [style=invis,width=0,label="",fixedsize=true]`)
       continue
     }
     let attrs, src, dst
@@ -154,7 +168,6 @@ const convert = (text) => {
 }
 
 /*
-
 Sample
 
 # title
@@ -170,6 +183,10 @@ subgraph cluster_foo {
 // test comment -> hah foo;a
 bar -> foo
 foo -> arstd ;arrowhead=none
+
+subgraph cluster_colorful { #33333333
+  a
+}
 */
 
 const headerT = `
