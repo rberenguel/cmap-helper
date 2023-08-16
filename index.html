@@ -94,6 +94,24 @@ const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
 const getCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
 const isRGBAHex = text => /^#[0-9a-f]{8}$/.test(text.trim())
 
+const labelBreaker = text => {
+  if(text.length>30 && !text.includes("\\n")){
+    const words = text.split(" ")
+    let lines = []
+    let line = ""
+    for(let word of words){
+      line += `${word} `
+      if(line.length>30){
+        lines.push(line)
+        line = ""
+      }
+    }
+    return lines.join("\\l")
+  }else{
+    return text
+  }
+}
+
 const convert = (text) => {
   result = []
   const lines = text.split('\n')
@@ -156,7 +174,7 @@ const convert = (text) => {
       label = ""
       props = props ? props : "" + "style=invis"
     }
-    const labelPropper = (label, props) => `[label="${label}${linkUTF}"${props ? " " + props : ""}${addendum}]`
+    const labelPropper = (label, props) => `[label="${labelBreaker(label)}${linkUTF}"${props ? " " + props : ""}${addendum}]`
     const operation = line.replace(" " + attrs[1], " ")
     let converted = `${operation} ${labelPropper(label, props)}`
     if(!hasArrow(line) && label.trim() == "="){
