@@ -95,6 +95,7 @@ const getCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
 const isRGBAHex = text => /^#[0-9a-f]{8}$/.test(text.trim())
 
 const labelBreaker = text => {
+  const leftAlign = "\\l"
   if(text.length>30 && !text.includes("\\n")){
     const words = text.split(" ")
     let lines = []
@@ -106,7 +107,9 @@ const labelBreaker = text => {
         line = ""
       }
     }
-    return lines.join("\\l")
+    lines.push(line)
+    lines.push("")
+    return lines.join(leftAlign)
   }else{
     return text
   }
@@ -192,6 +195,7 @@ Sample
 
 zzz The zs; fillcolor="#33339933"
 zzz -> arstd label thingy;color=red
+longy This is a very long label to see it break up correctly
 subgraph cluster_foo {
   baz baz;URL="foo"
   artsd
