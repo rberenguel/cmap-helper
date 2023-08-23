@@ -85,13 +85,17 @@ const hasArrow = (text) => {
   return flag
 }
 const hasSubgraph = text => text.includes("subgraph cluster_") // Only supporting clusters, no other
+const hasCluster = text => text.trim().startsWith("cluster ")
+const hasReplacement = text => /^\s*\$\S+\s*=\s*.*$/.test(text)
+const getReplacement = text => /^\s*(\$\S+)\s*=\s*(\S+)\s*$/.exec(text)
 const hasURL = text => text.includes("URL=")
 const isComment = text => /^\s*\/\/.*/.test(text)
 const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
-const onlyAttrs = text => /^\s*\w+=\w+\s*$/.test(text)
-const getAttrsArrow = text => /^\s*\w+\s*->\s*\w+\s+(.*)$/.exec(text)
-const getAttrsNode = text => /^\s*\w+\s+(.*)$/.exec(text)
-const getCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
+const onlyAttrs = text => /^\s*\S+=\w+\s*$/.test(text)
+const getAttrsArrow = text => /^\s*\S+\s*->\s*\S+\s+(.*)$/.exec(text)
+const getAttrsNode = text => /^\s*\S+\s+(.*)$/.exec(text)
+const getSubgraphCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
+const getLoneCluster = text => /^\s*cluster\s+(\S+).*{.*$/.exec(text)
 const isRGBAHex = text => /^#[0-9a-f]{8}$/.test(text.trim())
 
 const labelBreaker = text => {
@@ -117,6 +121,7 @@ const labelBreaker = text => {
 
 const convert = (text) => {
   result = []
+  let replacements = []
   const lines = text.split('\n')
   const tab = "  "
   const ttab = tab + tab
@@ -127,8 +132,23 @@ const convert = (text) => {
       result.push(tab + line)
       continue
     }
-    if(hasSubgraph(line)){
-      const cluster = getCluster(line)[1]
+    if(hasReplacement(line)){
+      const key = getReplacement(line)[1]
+      const value = getReplacement(line)[2]
+      replacements.push([key, value])
+    }
+    for(let replacement of replacements){
+      let [key, value] = replacement
+      line = line.replace(key, value)
+    }
+     
+    if(hasSubgraph(line) || hasCluster(line)){
+      let cluster
+      if(hasSubgraph(line)){
+        cluster = getSubgraphCluster(line)[1]
+      } else {
+        cluster = getLoneCluster(line)[1]
+      }
       clusters.push(cluster)
       // Add standard formatting
       let fill
@@ -138,7 +158,7 @@ const convert = (text) => {
          line = line.replace(word.trim(), "")
         }
       }
-      result.push(tab + line)
+      result.push(tab + `subgraph cluster_${cluster} {`)
       result.push(ttab + `style="filled, rounded, dotted"`)
       if(fill !== undefined){
         result.push(fill)
@@ -185,7 +205,8 @@ const convert = (text) => {
     }
     result.push(tab + converted)
   }
-  return result.join("<br/>")
+  let joined = result.join("<br/>")
+  return joined
 }
 
 /*
@@ -193,20 +214,22 @@ Sample
 
 # title
 
+$RED=#99333377
+
 zzz The zs; fillcolor="#33339933"
 zzz -> arstd label thingy;color=red
 longy This is a very long label to see it break up correctly
 subgraph cluster_foo {
   baz baz;URL="foo"
-  artsd
+  Thingy
   bah =;color=red
-  baz -> arstd !
+  baz -> Invisible !
 }
 // test comment -> hah foo;a
 bar -> foo
 foo -> arstd ;arrowhead=none
 
-subgraph cluster_colorful { #33333333
+cluster colorful { #33333333
   a
 }
 */
