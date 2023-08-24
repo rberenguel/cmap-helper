@@ -91,7 +91,7 @@ const getReplacement = text => /^\s*(\$\S+)\s*=\s*(\S+)\s*$/.exec(text)
 const hasURL = text => text.includes("URL=")
 const isComment = text => /^\s*\/\/.*/.test(text)
 const onlyBraces = text => /^\s*{\s*$/.test(text) || /^\s*}\s*$/.test(text)
-const onlyAttrs = text => /^\s*\S+=\w+\s*$/.test(text)
+const onlyAttrs = text => /^\s*\w+=.*\s*$/.test(text)
 const getAttrsArrow = text => /^\s*\S+\s*->\s*\S+\s+(.*)$/.exec(text)
 const getAttrsNode = text => /^\s*\S+\s+(.*)$/.exec(text)
 const getSubgraphCluster = text => /^\s*subgraph cluster_(\w+).*{.*$/.exec(text)
@@ -136,6 +136,7 @@ const convert = (text) => {
       const key = getReplacement(line)[1]
       const value = getReplacement(line)[2]
       replacements.push([key, value])
+      continue
     }
     for(let replacement of replacements){
       let [key, value] = replacement
@@ -214,12 +215,14 @@ Sample
 
 # title
 
+$bluefill = fillcolor="#33339933"
 $RED=#99333377
 
-zzz The zs; fillcolor="#33339933"
+zzz The zs; $bluefill
 zzz -> arstd label thingy;color=red
 longy This is a very long label to see it break up correctly
 subgraph cluster_foo {
+  label="Not foo"
   baz baz;URL="foo"
   Thingy
   bah =;color=red
